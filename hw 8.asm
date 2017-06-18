@@ -33,9 +33,8 @@ ID:		.word	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 	.text
 
-#s0 points to the position after the last data entry. So if data is at index 8, s0 = 12
-#t0 checks if the user goes to option 5 or 6 when they skip option 3 or 4
-
+#s0 is points to position after last data entry. So, if data is at index 8, s0 = 12
+#t0 is a check if user goes to option 5/6 when user skips option 3/4
 	addi	$s0, $zero, 0		
 	addi	$t0, $zero, -1		 
 main:	jal	displayMenu
@@ -71,7 +70,6 @@ skip7:	la	$a0, ERROR
 	j	main
 
 displayMenu: 
-# Display the menu
 	addi	$sp, $sp, -4
 	sw	$ra, ($sp)	# push return address 
 	la	$a0, MENU0
@@ -94,8 +92,7 @@ displayMenu:
 	
 getChoice: 
 # Prompt user for a choice and get that choice from user 
-# return: 
-#$v0 is the user's choice 
+# $v0 = user's choice 
 	addi	$sp, $sp, -4
 	sw	$ra, ($sp)	# push return address 
 	la	$a0, CHOOSE
@@ -107,7 +104,7 @@ getChoice:
 
 option1:
 # Displays the ID & SSN array
-# t4 is used as increasing index; s0 is the number of data in arrays
+# t4 is used as increasing index; s0 = number of data in arrays
 # first line checks if data has been input for ID/SSN array
 	beq	$s0, $zero, error1
 	addi	$sp, $sp, -8
@@ -155,7 +152,7 @@ option2:
 	sw	$s4, ID($s0)
 	sw	$v0, SSN($s0)
 	addi	$s0, $s0, 4
-quit2:	lw	$ra, ($sp)	# pop return address 
+quit2:	lw	$ra, ($sp)	 
 	addi	$sp, $sp, 4
 	jr	$ra
 
@@ -170,12 +167,15 @@ option3:
 	la	$a0, IDGET
 	jal	dispStr
 	jal	getNum
+	addi	$t9, $zero, -1
 	jal	findRecord
+	addi	$t9, $t9, 1
 	lw	$ra, ($sp)	# pop return address 
 	addi	$sp, $sp, 4
 	jr	$ra
 
 option4:
+# does same thing as Option 3 but using SSN to find ID
 	beq	$s0, $zero, error1
 	addi	$sp, $sp, -4
 	sw	$ra, ($sp)
@@ -184,28 +184,32 @@ option4:
 	la	$a0, SSNGET
 	jal	dispStr
 	jal	getNum
+	addi	$t9, $zero, 1
 	jal	findRecord
+	addi	$t9, $t9, -1
 	lw	$ra, ($sp)	# pop return address 
 	addi	$sp, $sp, 4
 	jr	$ra
 
 option5:
+# sorts selected student record to the front by swapping selected record with the previous record
+# first line checks if there is a "selected" student or not
 	beq	$t0, -1, errnoselect
 	addi	$sp, $sp, -8
 	sw	$ra, ($sp)
 	sw	$t0, 4($sp)
 	addi	$t4, $t0, -4
 	addi	$t5, $t0, 0
-loop5:	lw	$s4, ID($t4)
+loop5:	lw	$s4, ID($t4)	# swaps positions of ID array
 	lw	$s5, ID($t5)
 	sw	$s4, ID($t5)
 	sw	$s5, ID($t4)
 	addi	$t4, $t4, -4
 	addi	$t5, $t5, -4		
-	bne	$t5, $zero, loop5
+	bne	$t5, $zero, loop5	# loops back until $t5 is zero
 	addi	$t4, $t0, -4
 	addi	$t5, $t0, 0
-loop5a:	lw	$s4, SSN($t4)
+loop5a:	lw	$s4, SSN($t4)	# same as before but for SSN array
 	lw	$s5, SSN($t5)
 	sw	$s4, SSN($t5)
 	sw	$s5, SSN($t4)
@@ -218,22 +222,24 @@ loop5a:	lw	$s4, SSN($t4)
 	jr	$ra
 	
 option6:
+# sorts selected student record to the back by swapping selected record with the next record
+# first line checks if there is a "selected" student or not
 	beq	$t0, -1, errnoselect
 	addi	$sp, $sp, -8
 	sw	$ra, ($sp)
 	sw	$t0, 4($sp)
 	addi	$t4, $t0, 0
 	addi	$t5, $t0, 4
-loop6:	lw	$s4, ID($t4)
+loop6:	lw	$s4, ID($t4)	# swaps positions of ID array
 	lw	$s5, ID($t5)
 	sw	$s4, ID($t5)
 	sw	$s5, ID($t4)
 	addi	$t4, $t4, 4
 	addi	$t5, $t5, 4		
-	bne	$t5, $s0, loop6
+	bne	$t5, $s0, loop6	# loops back until $t5 is zero
 	addi	$t4, $t0, 0
 	addi	$t5, $t0, 4
-loop6a:	lw	$s4, SSN($t4)
+loop6a:	lw	$s4, SSN($t4)	# same as before but for SSN array
 	lw	$s5, SSN($t5)
 	sw	$s4, SSN($t5)
 	sw	$s5, SSN($t4)
@@ -247,11 +253,12 @@ loop6a:	lw	$s4, SSN($t4)
 
 error1:
 #Displays error message when there's no ID/SSN yet
+	addi	$sp, $sp, -4
+	sw	$ra, ($sp)
 	la 	$a0, ERROR1
 	jal	dispStr
-	lw	$s0, 4($sp)
 	lw	$ra, ($sp)
-	addi	$sp, $sp, 8
+	addi	$sp, $sp, 4
 	jr	$ra
 	
 errnoselect:
@@ -275,8 +282,7 @@ checkDuplicate:
 		bne	$t4, $zero, quitCheck
 		la	$a0, ERRDUP
 		jal	dispStr
-quitCheck:
-		lw	$ra, ($sp)
+quitCheck:	lw	$ra, ($sp)
 		addi	$sp, $sp, 4
 		jr	$ra
 
@@ -284,18 +290,20 @@ quitCheck:
 findRecord:
 # Detects if ID/SSN is in the arrays, Compare v0 with t1 to see if they match or not
 # $t1 is used to compare ID/SSN; $t0 is used as index to the record you want to find; t4 is checkDuplicate indicator;
-	addi	$sp, $sp, -8
-	sw	$ra, ($sp)
-	sw	$s0, 4($sp)
-	addi	$t0, $zero, 0
-loopR:	addi	$s0, $s0, -4
-	blt	$s0, $zero, noRecord
-	lw	$t1, ID($t0)
-	beq	$v0, $t1, foundRecordID
-skipID:	lw	$t1, SSN($t0)
-	beq	$v0, $t1, foundRecordSSN			
-	addi	$t0, $t0, 4
-	j	loopR
+		addi	$sp, $sp, -8
+		sw	$ra, ($sp)
+		sw	$s0, 4($sp)
+		addi	$t0, $zero, 0
+loopR:		addi	$s0, $s0, -4
+		blt	$s0, $zero, noRecord
+		beq	$t9, 1, skipID
+		lw	$t1, ID($t0)
+		beq	$v0, $t1, foundRecordID
+		beq	$t9, -1, skipSSN
+skipID:		lw	$t1, SSN($t0)
+		beq	$v0, $t1, foundRecordSSN			
+skipSSN:	addi	$t0, $t0, 4
+		j	loopR
 						
 foundRecordID:
 # first line is for duplication check
@@ -366,7 +374,7 @@ dispNum:
 
 # Get a number from user
 # return: 
-#   $v0 = number from user  
+# $v0 = number from user  
 # (leave other registers unaffected) 
 getNum: 
 	addi	$v0, $zero, 5
