@@ -1,3 +1,6 @@
+#author: Jonathan Rudnick
+#class: CS 130 - Computer Organization and Assembly Code
+#date: November 6, 2014
 
 	.data
 
@@ -30,8 +33,9 @@ ID:		.word	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 	.text
 
-#s0 is points to position after last data entry. So, if data is at index 8, s0 = 12
-#t0 is a check if user goes to option 5/6 when user skips option 3/4
+#s0 points to the position after the last data entry. So if data is at index 8, s0 = 12
+#t0 checks if the user goes to option 5 or 6 when they skip option 3 or 4
+
 	addi	$s0, $zero, 0		
 	addi	$t0, $zero, -1		 
 main:	jal	displayMenu
@@ -67,7 +71,7 @@ skip7:	la	$a0, ERROR
 	j	main
 
 displayMenu: 
-# Display the menu (obviously!)
+# Display the menu
 	addi	$sp, $sp, -4
 	sw	$ra, ($sp)	# push return address 
 	la	$a0, MENU0
@@ -91,7 +95,7 @@ displayMenu:
 getChoice: 
 # Prompt user for a choice and get that choice from user 
 # return: 
-#   $v0 = user's choice 
+#$v0 is the user's choice 
 	addi	$sp, $sp, -4
 	sw	$ra, ($sp)	# push return address 
 	la	$a0, CHOOSE
@@ -103,7 +107,7 @@ getChoice:
 
 option1:
 # Displays the ID & SSN array
-# t4 is used as increasing index; s0 = number of data in arrays
+# t4 is used as increasing index; s0 is the number of data in arrays
 # first line checks if data has been input for ID/SSN array
 	beq	$s0, $zero, error1
 	addi	$sp, $sp, -8
